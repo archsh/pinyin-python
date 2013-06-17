@@ -9,19 +9,23 @@ def code2unichar(code):
 class Pinyin(object):
     #code
     def __init__(self, filename=None):
-        if filename is None:
-            filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),'pinyin.dat')
+        #if filename is None:
+        #    filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),'pinyin.dat')
         self._pydata=list()
         self.load(filename)
     
-    def load(self, filename):
-        for line in open(filename):
-            line = line.strip()
-            zi,pys = line.split('\t',1)
-            pys = pys.split(' ')
-            row = [code2unichar(zi)]
-            row.extend(pys)
-            self._pydata.append(row)
+    def load(self, filename=None):
+        if filename is None:
+            from .pydata import PINYIN_WORDS
+            self._pydata = PINYIN_WORDS
+        else:
+            for line in open(filename):
+                line = line.strip()
+                zi,pys = line.split('\t',1)
+                pys = pys.split(' ')
+                row = [code2unichar(zi)]
+                row.extend(pys)
+                self._pydata.append(row)
     
     def query(self, py):
         def match_pinyin(x):
@@ -34,4 +38,16 @@ class Pinyin(object):
         #return map(lambda x: x[0], filter(match_pinyin, self._pydata))
             
         
+    def gen_data_py(self, filename):
+        #f = open(filename,'w')
+        f.write('# -*- coding:utf-8 -*-\n')
+        f.write('PINYIN_WORDS=(\n')
+        for row in self._pydata:
+            line=['\t']
+            line.append('(')
+            line.append(','.join(['"%s"'%x for x in row]))
+            line.append('),\n')
+            f.write(''.join(line))
+        f.write(')\n')
+        f.close()
     
