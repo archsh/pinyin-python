@@ -22,7 +22,7 @@ def raw_to_optimized(raw_data,filename=None):
         f = open(filename,'w')
         lines = list()
         for k,v in WORDS.items():
-            lines.append([k]+v)
+            lines.append([k]+list(set(v)))
         lines.sort(key=lambda x:x[0])
         f.write('# -*- coding:utf-8 -*-\n')
         f.write('PINYIN_WORDS=(\n')
@@ -121,7 +121,7 @@ class Pinyin(object):
         return result
         #return map(lambda x: x[0], filter(match_pinyin, self._pydata))
     
-if __name__ == '__##main__':
+if __name__ == '__main__':
     import sys, datetime
     t1 = datetime.datetime.now()
     py = Pinyin()
@@ -139,7 +139,7 @@ if __name__ == '__##main__':
     print 't2-t1:',t2-t1
     print 't3-t2:',t3-t2
 
-if __name__ == '__main__':
+if __name__ == '__##main__':
     import sys
     from raw_data import PINYIN_WORDS
     raw_to_optimized(PINYIN_WORDS,sys.argv[1] if len(sys.argv)>1 else None)
