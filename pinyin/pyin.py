@@ -36,7 +36,7 @@ class Pinyin(object):
             if x[0][:len(py)]==py:
                 return True
             return False
-        def ext(x,y):
+        def ext(x,y=None):
             if not isinstance(x,list):
                 x = list(x[1:])
             if y:
@@ -45,9 +45,10 @@ class Pinyin(object):
         
         #t1 = datetime.datetime.now()
         result = filter(match_pinyin,self._pydata)
+        #print result
         #t2 = datetime.datetime.now()
         #sorted(filter(lambda x: x is not None,map(match_pinyin, self._pydata)),key=lambda x: x[0])
-        result = reduce(ext,result)
+        result = reduce(ext,result) if len(result)>1 else ext(result[0]) if result else []
         #t3 = datetime.datetime.now()
         #print 'query> t2-t1:',t2-t1
         #print 'query> t3-t2:',t3-t2
@@ -73,7 +74,10 @@ if __name__ == '__main__':
     t1 = datetime.datetime.now()
     py = Pinyin()
     t2 = datetime.datetime.now()
-    ret = py.query('ch')
+    if len(sys.argv)>1:
+        ret = py.query(sys.argv[1])
+    else:
+        ret = py.query('dang')
     t3 = datetime.datetime.now()
     print len(ret)
     
