@@ -29,7 +29,7 @@ class DefaultTestCase(unittest.TestCase):
         t3 = datetime.datetime.now()
         print 't2-t1:',t2-t1
         print 't3-t2:',t3-t2
-        for w in py.query('ti'): print w,
+        for w in py.query('f'): print w,
         #for w in py.query('ti'): print w,
         #for w in py.query('bei'): print w,
         #for w in py.query('da'): print w,
