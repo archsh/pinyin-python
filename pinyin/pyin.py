@@ -5,6 +5,40 @@ def code2unichar(code):
     #print char,'(%s)'%code
     return char
 
+def raw_to_optimized(raw_data,filename=None):
+    """
+    Convert raw data to optimized data.
+    """
+    import sys, datetime
+    assert raw_data
+    WORDS={}
+    for row in raw_data:
+        py = row[0][:-1]
+        if py in WORDS:
+            WORDS[py].append(row[1])
+        else:
+            WORDS[py]=[row[1]]
+    if filename:
+        f = open(filename,'w')
+        lines = list()
+        for k,v in WORDS.items():
+            lines.append([k]+v)
+        lines.sort(key=lambda x:x[0])
+        f.write('# -*- coding:utf-8 -*-\n')
+        f.write('PINYIN_WORDS=(\n')
+        for row in lines:
+            line=['\t']
+            line.append('(')
+            line.append(','.join(['"%s"'%x for x in row]))
+            line.append('),\n')
+            f.write(''.join(line))
+        f.write(')\n')
+        f.close()
+    else:
+        for k,v in WORDS.items():
+            print k,':',len(v)  
+
+
 class Pinyin(object):
     #code
     def __init__(self, *filename):
@@ -58,7 +92,7 @@ class Pinyin(object):
             self.load(f)
 
     
-    def query(self, py):
+    def query(self, py,cross_sort=False):
         import datetime
         py = py.upper()
         def match_pinyin(x):
@@ -78,12 +112,16 @@ class Pinyin(object):
         #sorted(filter(lambda x: x is not None,map(match_pinyin, self._pydata)),key=lambda x: x[0])
         result = reduce(ext,result) if len(result)>1 else ext(result[0]) if result else []
         #t3 = datetime.datetime.now()
+        if cross_sort:
+            result.sort(key=lambda x:self._wordlib.get(unicode(x,'utf8'),0),reverse=True)
+        #t4 = datetime.datetime.now()
         #print 'query> t2-t1:',t2-t1
         #print 'query> t3-t2:',t3-t2
+        #print 'query> t4-t3:',t4-t3
         return result
         #return map(lambda x: x[0], filter(match_pinyin, self._pydata))
     
-if __name__ == '__main__':
+if __name__ == '__##main__':
     import sys, datetime
     t1 = datetime.datetime.now()
     py = Pinyin()
@@ -101,35 +139,10 @@ if __name__ == '__main__':
     print 't2-t1:',t2-t1
     print 't3-t2:',t3-t2
 
-if __name__ == '__TmainT__':
-    import sys, datetime
-    from pydata import PINYIN_WORDS
-    WORDS={}
-    for row in PINYIN_WORDS:
-        py = row[0][:-1]
-        if py in WORDS:
-            WORDS[py].append(row[1])
-        else:
-            WORDS[py]=[row[1]]
-    if len(sys.argv)>1:
-        f = open(sys.argv[1],'w')
-        lines = list()
-        for k,v in WORDS.items():
-            lines.append([k]+v)
-        lines.sort(key=lambda x:x[0])
-        f.write('# -*- coding:utf-8 -*-\n')
-        f.write('PINYIN_WORDS=(\n')
-        for row in lines:
-            line=['\t']
-            line.append('(')
-            line.append(','.join(['"%s"'%x for x in row]))
-            line.append('),\n')
-            f.write(''.join(line))
-        f.write(')\n')
-        f.close()
-    else:
-        for k,v in WORDS.items():
-            print k,':',len(v)  
+if __name__ == '__main__':
+    import sys
+    from raw_data import PINYIN_WORDS
+    raw_to_optimized(PINYIN_WORDS,sys.argv[1] if len(sys.argv)>1 else None)
     
     
     
