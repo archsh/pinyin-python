@@ -49,11 +49,11 @@ class Pinyin(object):
         from data import PINYIN_WORDS
         self._pydata=[list(row) for row in PINYIN_WORDS]
         self._wordlib={}
-        if not filename:
-            filename = [
-                os.path.join(os.path.dirname(os.path.abspath(__file__)),'wordlib0.txt'),
-                os.path.join(os.path.dirname(os.path.abspath(__file__)),'wordlib1.txt'),
-            ]
+        #if not filename:
+        #    filename = [
+        #        os.path.join(os.path.dirname(os.path.abspath(__file__)),'wordlib0.txt'),
+        #        os.path.join(os.path.dirname(os.path.abspath(__file__)),'wordlib1.txt'),
+        #    ]
         if filename is not None:
             self.load(filename)
     
