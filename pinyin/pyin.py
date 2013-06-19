@@ -5,29 +5,22 @@ def code2unichar(code):
     #print char,'(%s)'%code
     return char
 
-
 class Pinyin(object):
     #code
     def __init__(self, filename=None):
-        #if filename is None:
-        #    filename = os.path.join(os.path.abspath(os.path.dirname(__file__)),'pinyin.dat')
+        """
+        Initialize a Pinyin instance. filename for init with a user lib filename.
+        """
         from data import PINYIN_WORDS
         self._pydata=PINYIN_WORDS
-        #self.load(filename)
+        if filename is not None:
+            self.load(filename)
     
-    def load(self, filename=None):
-        return
-        if filename is None:
-            from data import PINYIN_WORDS
-            self._pydata = PINYIN_WORDS
-        else:
-            for line in open(filename):
-                line = line.strip()
-                zi,pys = line.split('\t',1)
-                pys = pys.split(' ')
-                row = [code2unichar(zi)]
-                row.extend(pys)
-                self._pydata.append(row)
+    def load(self, filename):
+        '''
+        Load user lib data file.
+        '''
+        pass
     
     def query(self, py):
         import datetime
@@ -42,7 +35,6 @@ class Pinyin(object):
             if y:
                 x.extend(y[1:])
             return x
-        
         #t1 = datetime.datetime.now()
         result = filter(match_pinyin,self._pydata)
         #print result
@@ -54,21 +46,7 @@ class Pinyin(object):
         #print 'query> t3-t2:',t3-t2
         return result
         #return map(lambda x: x[0], filter(match_pinyin, self._pydata))
-            
-        
-    def gen_data_py(self, filename):
-        #f = open(filename,'w')
-        f.write('# -*- coding:utf-8 -*-\n')
-        f.write('PINYIN_WORDS=(\n')
-        for row in self._pydata:
-            line=['\t']
-            line.append('(')
-            line.append(','.join(['"%s"'%x for x in row]))
-            line.append('),\n')
-            f.write(''.join(line))
-        f.write(')\n')
-        f.close()
-
+    
 if __name__ == '__main__':
     import sys, datetime
     t1 = datetime.datetime.now()
@@ -86,7 +64,6 @@ if __name__ == '__main__':
     print ''
     print 't2-t1:',t2-t1
     print 't3-t2:',t3-t2
-    
 
 if __name__ == '__TmainT__':
     import sys, datetime
