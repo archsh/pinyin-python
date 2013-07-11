@@ -99,18 +99,26 @@ def load_txt_phrases(filename):
 
 
 if __name__ == '__main__':
-    import sys
+    import sys, datetime
     from data import PINYIN_WORDS
     if len(sys.argv)>1:
+        t1 = datetime.datetime.now()
         dictionary = load_txt_dictionary(sys.argv[1])
+        t2 = datetime.datetime.now()
         if len(sys.argv)>2:
             #f = open(sys.argv[2],'w')
             #for py,words in dictionary:
             #    line = u'%s %s\n'%(py, u''.join([x[0] for x in words]))
             #    f.write(line.encode('utf8'))
             #f.close()
-            write_data_python(sys.argv[2],dictionary)
-            #dictionary = load_json(filename=sys.argv[2])
+            #write_data_python(sys.argv[2],dictionary)
+            write_json(sys.argv[2],dictionary)
+            t3 = datetime.datetime.now()
+            dictionary = load_json(filename=sys.argv[2])
+            t4 = datetime.datetime.now()
+            print 't2-t1:', t2-t1
+            print 't3-t2:', t3-t2
+            print 't4-t3:', t4-t3
             #for py,words in dictionary:
             #    words = sorted(words,key=lambda x:x[1])
             #    print py,':',
