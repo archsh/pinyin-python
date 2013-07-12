@@ -186,6 +186,28 @@ def load_txt_phrases(filename):
         filename.close()
     return datas
 
+def load_txt_phrases2(filename):
+    to_close = False
+    if isinstance(filename,(str,unicode)):
+        to_close = True
+        filename = open(filename,'rU')
+    if not isinstance(filename,file):
+        raise Exception('Not a file handle.')
+    datas = dict()
+    for line in filename.readlines():
+        line = unicode(line.strip(),'utf8')
+        if not line: continue
+        #print 'line:>',line
+        phrases,pinyins = line.split(u'\t',1)
+        pinyins = pinyins.strip().replace("'",'-')
+        if pinyins in datas:
+            datas[pinyins].append(phrases)
+        else:
+            datas[pinyins]=[phrases]
+    if to_close:
+        filename.close()
+    return datas
+
 
 import sys, datetime
 
@@ -233,15 +255,42 @@ def process_phrases(txtfile,jsonfile=None,jsonindent=None): ### For Phrases
         pass
         #print json.dumps(dictionary,indent=' ')
 
+def process_phrases2(txtfile,jsonfile=None,jsonindent=None): ### For Phrases
+    assert txtfile
+    t1 = datetime.datetime.now()
+    phrases = load_txt_phrases2(txtfile)
+    t2 = datetime.datetime.now()
+    if jsonfile:
+        #f = open(sys.argv[2],'w')
+        #for py,words in dictionary:
+        #    line = u'%s %s\n'%(py, u''.join([x[0] for x in words]))
+        #    f.write(line.encode('utf8'))
+        #f.close()
+        #write_data_python(sys.argv[2],dictionary)
+        write_json(jsonfile,phrases,indent=jsonindent)
+        t3 = datetime.datetime.now()
+        phrases = load_json(filename=jsonfile)
+        t4 = datetime.datetime.now()
+        print 't2-t1:', t2-t1
+        print 't3-t2:', t3-t2
+        print 't4-t3:', t4-t3
+        for k,v in phrases.items():
+            print k,':', u','.join(v)        
+    else:
+        pass
+        #print json.dumps(dictionary,indent=' ')
+
 if __name__ == '__main__':
     indent = ' '
     if len(sys.argv)<3:
-        print 'Usage: gen_data.py dictionary|phrase txt_filename [json_output_filename]'
+        print 'Usage: gen_data.py dictionary|phrase|phrase2 txt_filename [json_output_filename]'
         sys.exit(1)
     if sys.argv[1]=='dictionary':
         process_dictionary(sys.argv[2], jsonfile=None if len(sys.argv)<4 else sys.argv[3], jsonindent=indent)
     elif sys.argv[1]=='phrase':
         process_phrases(sys.argv[2], jsonfile=None if len(sys.argv)<4 else sys.argv[3], jsonindent=indent)
+    elif sys.argv[1]=='phrase2':
+        process_phrases2(sys.argv[2], jsonfile=None if len(sys.argv)<4 else sys.argv[3], jsonindent=indent)
     else:
         print 'Usage: gen_data.py dictionary|phrase txt_filename [json_output_filename]'
         sys.exit(1)

@@ -143,17 +143,19 @@ class Pinyin(object):
                     break;
                 if not pp or not pp.startswith(p):
                     return False
-            print 'Matched: %s <-> %s'%('-'.join(pys),pinyinfull)
+            #print 'Matched: %s <-> %s'%('-'.join(pys),pinyinfull)
             return True
         result = []
         if not self.phrases:
             return []
         for pk in sorted(filter(lambda x: x.startswith(pys[0]),self.phrases.keys())):
             if match_pinyin(pys,pk):
+                #print u'Get:', ','.join(self.phrases[pk])
+                #print u'Selected:', selected
                 if not selected:
                     result.extend(self.phrases[pk])
                 else:
-                    result.extend(filter(lambda x: x.startswith(selected),self.phrases[pk]))
+                    result.extend(map(lambda x:x[len(selected):],filter(lambda x: x.startswith(selected),self.phrases[pk])))
         return result
             
         
@@ -196,10 +198,7 @@ class Pinyin(object):
         else:
             if index>=len(pys):
                 index = -1
-            if index < 0:
-                phrases = self.fetch_phrases(pys,selected=None)
-            else:
-                phrases = []
+            phrases = self.fetch_phrases(pys,selected=selected)
             words = self.fetch_word(pys[0 if index<0 else index])
             return pys, phrases + words if len(pys)>1 else words+phrases
     

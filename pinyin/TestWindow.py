@@ -122,7 +122,8 @@ class Ui_MainWindow(object):
     def words_selected(self, item):
         if not self._py or not self._pys:
             return
-        self._words = self._words+item.text() if self._words else item.text()
+        self._words = self._words+unicode(item.text()) if self._words else unicode(item.text())
+        print 'Selected Words:',self._words
         self.lineEdit_Inputed.setText(self._words)
         if len(self._words)>= len(self._pys):
             self.listWidget_Words.clear()
