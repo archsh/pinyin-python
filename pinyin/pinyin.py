@@ -6,6 +6,21 @@ except Exception:
     import json
 from dictionary import PINYIN_DICTIONARY
 
+PY_SHENGMU = ("b","p","m","f","d","t","n","l","g","k","h","j","q","x","zh","ch","sh","r","z","c","s","y","w")
+PY_YUNMU   = ("a","o","e","ai","ei","ao","ou","an","en","ang","eng","ong","i","ia","ie","iao","iou","ian","in","iang","iong","u","ua","uai","uan","uen","uang","ueng","v")
+def pinyin_split(pystr):
+    '''
+    pinyin_split: split a given pinyin string to a list of seperated pinyin.
+    '''
+    assert pystr
+    pystr = pystr.encode('ascii')
+    result = list()
+    last_ch = None
+    #for c in pystr:
+    #    if c in PY_SHENGMU or 
+    
+        
+
 def load_json(filename=None,content=None):
     to_close = False
     if filename is not None:
@@ -98,6 +113,7 @@ class Pinyin(object):
         @filename: a string of filename and path or a file object.
         """
         write_json(filename,self.phrases)
+    
     
     
 
