@@ -64,7 +64,7 @@ class Pinyin(object):
                     print 'Warning: Invalid JSON format!',e
                     self.dictionary = None
         else:
-            self.dictionary = None
+            self.dictionary = PINYIN_DICTIONARY
         self.phrases = None
     
     def load_dictionary(self, filename=None, content=None):
@@ -102,20 +102,52 @@ class Pinyin(object):
         """
         write_json(filename,self.phrases)
     
+    def validate_dictionary(self):
+        if not self.dictionary:
+            raise Exception('Please load dictionary or make sure your dictionary is valid!')
+    
+    
     def pinyin_split(self,pystr):
         '''
         pinyin_split: split a given pinyin string to a list of seperated pinyin.
         '''
+        def match_pinyin(s):
+            if filter(lambda x: x.startswith(s),self.dictionary.keys()):
+                return True
+            return False
         assert pystr
+        self.validate_dictionary()
         pystr = pystr.encode('ascii')
-        result = pystr.split('')
-        result = list()
+        result = list()#(pystr)#.split('')
         last_ch = None
-        #for c in pystr:
-        #    if c in PY_SHENGMU or
+        for c in pystr:
+            if not last_ch:
+                last_ch = c
+                continue
+            if match_pinyin(last_ch+c):
+                last_ch += c
+                continue
+            else:
+                result.append(last_ch)
+                last_ch = c
+        else:
+            if last_ch:
+                result.append(last_ch)
         return result
     
-
+    def fetch_phrases(self, py):
+        assert py
+        if not self.phrases:
+            return None
+        
+    def fetch_word(self, py):
+        assert py
+        if py in self.dictionary.keys():
+            return map(lambda k: k[0], sorted(self.dictionary[py].items(),key=lambda x:x[1], reverse=True))
+        else:
+            return []
+    
+    
     
     def query(self, py,cross_sort=False,remove_dup=False):
         import datetime

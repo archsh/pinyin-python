@@ -7,7 +7,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 import sys,os
-sys.path.append('../pinyin')
 import datetime
 import pinyin
 from PyQt4 import QtCore, QtGui
@@ -72,8 +71,13 @@ class Ui_MainWindow(object):
         self.pushButton_Clear.setText(_translate("MainWindow", "Clear", None))
         self.groupBox.setTitle(_translate("MainWindow", "Filtered Words", None))
     
-    def pinyin_query(self, pinyin):
-        self.plainTextEdit_Words.setPlainText('\n'.join(self.pyinst.pinyin_split(pinyin)))
+    def pinyin_query(self, py):
+        py = str(py)
+        if py:
+            self.plainTextEdit_Words.setPlainText('\n'.join(self.pyinst.fetch_word(py)))
+            #('\n'.join(self.pyinst.pinyin_split(py)))
+        else:
+            self.plainTextEdit_Words.setPlainText('')
     
 
 
