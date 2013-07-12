@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import os
+import os, datetime
 try:
     import simplejson as json
 except Exception:
@@ -60,11 +60,13 @@ class Pinyin(object):
             else:
                 try:
                     self.dictionary = json.loads(dictionary)
+                    self.dictionary_keys = sorted(self.dictionary.keys())
                 except Exception,e:
                     print 'Warning: Invalid JSON format!',e
                     self.dictionary = None
         else:
             self.dictionary = PINYIN_DICTIONARY
+            self.dictionary_keys = sorted(self.dictionary.keys())
         self.phrases = None
     
     def load_dictionary(self, filename=None, content=None):
@@ -75,6 +77,7 @@ class Pinyin(object):
         @content: a string of JSON.
         """
         self.dictionary = load_json(filename=filename,content=content)
+        self.dictionary_keys = sorted(self.dictionary.keys())
     
     
     def load_phrases(self, filename=None,content=None):
@@ -137,6 +140,7 @@ class Pinyin(object):
     
     def fetch_phrases(self, pys,selected=None):
         assert pys
+        t1 = datetime.datetime.now()
         def match_pinyin(pys,pinyinfull):
             for p,pp in map(None,pys,pinyinfull.split('-')):
                 if not p:
@@ -158,11 +162,14 @@ class Pinyin(object):
                     result.extend(self.phrases[pk])
                 else:
                     result.extend(map(lambda x:x[len(selected):],filter(lambda x: x.startswith(selected),self.phrases[pk])))
+        t2 = datetime.datetime.now()
+        print 'fetch_phrases:',t2-t1
         return result
             
         
     def fetch_word(self, py):
         assert py
+        t1 = datetime.datetime.now()
         def remove_dup(x,y):
             if not isinstance(x,list):
                 x=[x]
@@ -171,14 +178,17 @@ class Pinyin(object):
             return x
         def _do_fetch(piny):
             if piny in self.dictionary.keys():
-                return map(lambda k: k[0], sorted(self.dictionary[piny].items(),key=lambda x:x[1], reverse=True))
+                return map(lambda k: k[0], self.dictionary[piny])
             else:
                 result = list()
-                for k in filter(lambda x: x.startswith(piny),sorted(self.dictionary.keys())):
+                for k in filter(lambda x: x.startswith(piny),self.dictionary_keys):
                     result.extend(_do_fetch(k))
+                    break;
                 return result
         result = _do_fetch(py)
         result = reduce(remove_dup,result) if len(result)> 1 else result
+        t2 = datetime.datetime.now()
+        print 'fetch_word:',t2-t1
         return result
     
     def query(self, py,index=-1,selected=None):
@@ -195,8 +205,8 @@ class Pinyin(object):
         pys = self.pinyin_split(py)
         if len(pys)<1:
             return [],[]
-        #elif len(pys)==1:
-        #    return pys, self.fetch_word(pys[0])
+        elif len(pys)==1:
+            return pys, self.fetch_word(pys[0])
         else:
             if index>=len(pys):
                 index = -1
