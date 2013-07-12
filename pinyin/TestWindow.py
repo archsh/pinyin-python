@@ -59,6 +59,11 @@ class Ui_MainWindow(object):
         self.lineEdit_Pinyins = QtGui.QLineEdit(self.groupBox_Pinyins)
         self.lineEdit_Pinyins.setObjectName(_fromUtf8("lineEdit_Pinyins"))
         self.horizontalLayout_2.addWidget(self.lineEdit_Pinyins)
+        self.label_Timespent = QtGui.QLabel(self.groupBox_Pinyins)
+        self.label_Timespent.setMinimumSize(QtCore.QSize(60, 0))
+        self.label_Timespent.setText(_fromUtf8(""))
+        self.label_Timespent.setObjectName(_fromUtf8("label_Timespent"))
+        self.horizontalLayout_2.addWidget(self.label_Timespent)
         self.verticalLayout_2.addWidget(self.groupBox_Pinyins)
         self.groupBox_Words = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_Words.setObjectName(_fromUtf8("groupBox_Words"))
@@ -94,7 +99,10 @@ class Ui_MainWindow(object):
             idx = 0
             for w in self._pys:
                 if pos2>= pos and pos2<= pos+len(w):
+                    t1 = datetime.datetime.now()
                     words = self.pyinst.query(self._py,index=idx)
+                    t2 = datetime.datetime.now()
+                    self.label_Timespent.setText("%s"%(t2-t1))
                     self.plainTextEdit_Words.setPlainText('\n'.join(words))
                     #('\n'.join(self.pyinst.pinyin_split(py)))
                     self.groupBox_Words.setTitle("Filtered Words: %d"%len(words))
@@ -106,9 +114,12 @@ class Ui_MainWindow(object):
         py = str(py)
         if py:
             pys   = self.pyinst.pinyin_split(py)
+            t1 = datetime.datetime.now()
             words = self.pyinst.query(py)
+            t2 = datetime.datetime.now()
             self._py = py
             self._pys = pys
+            self.label_Timespent.setText("%s"%(t2-t1))
             self.lineEdit_Pinyins.setText(" ".join(pys))
             self.plainTextEdit_Words.setPlainText('\n'.join(words))
             #('\n'.join(self.pyinst.pinyin_split(py)))
