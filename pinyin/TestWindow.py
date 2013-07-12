@@ -39,6 +39,16 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.centralwidget)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.groupBox_2 = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox_2.setTitle(_fromUtf8(""))
+        self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.lineEdit_Inputed = QtGui.QLineEdit(self.groupBox_2)
+        self.lineEdit_Inputed.setReadOnly(True)
+        self.lineEdit_Inputed.setObjectName(_fromUtf8("lineEdit_Inputed"))
+        self.verticalLayout_3.addWidget(self.lineEdit_Inputed)
+        self.verticalLayout_2.addWidget(self.groupBox_2)
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
         self.groupBox.setTitle(_fromUtf8(""))
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
@@ -60,8 +70,12 @@ class Ui_MainWindow(object):
         self.lineEdit_Pinyins.setObjectName(_fromUtf8("lineEdit_Pinyins"))
         self.horizontalLayout_2.addWidget(self.lineEdit_Pinyins)
         self.label_Timespent = QtGui.QLabel(self.groupBox_Pinyins)
-        self.label_Timespent.setMinimumSize(QtCore.QSize(60, 0))
+        self.label_Timespent.setMinimumSize(QtCore.QSize(90, 0))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.label_Timespent.setFont(font)
         self.label_Timespent.setText(_fromUtf8(""))
+        self.label_Timespent.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_Timespent.setObjectName(_fromUtf8("label_Timespent"))
         self.horizontalLayout_2.addWidget(self.label_Timespent)
         self.verticalLayout_2.addWidget(self.groupBox_Pinyins)
@@ -69,20 +83,25 @@ class Ui_MainWindow(object):
         self.groupBox_Words.setObjectName(_fromUtf8("groupBox_Words"))
         self.verticalLayout = QtGui.QVBoxLayout(self.groupBox_Words)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.plainTextEdit_Words = QtGui.QPlainTextEdit(self.groupBox_Words)
-        self.plainTextEdit_Words.setReadOnly(True)
-        self.plainTextEdit_Words.setPlainText(_fromUtf8(""))
-        self.plainTextEdit_Words.setObjectName(_fromUtf8("plainTextEdit_Words"))
-        self.verticalLayout.addWidget(self.plainTextEdit_Words)
+        self.listWidget_Words = QtGui.QListWidget(self.groupBox_Words)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.listWidget_Words.setFont(font)
+        self.listWidget_Words.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.listWidget_Words.setProperty("showDropIndicator", False)
+        self.listWidget_Words.setSpacing(3)
+        self.listWidget_Words.setGridSize(QtCore.QSize(20, 20))
+        self.listWidget_Words.setObjectName(_fromUtf8("listWidget_Words"))
+        self.verticalLayout.addWidget(self.listWidget_Words)
         self.verticalLayout_2.addWidget(self.groupBox_Words)
         MainWindow.setCentralWidget(self.centralwidget)
+        self.lineEdit_Pinyin.setFocus()
 
         self.retranslateUi(MainWindow)
         QtCore.QObject.connect(self.lineEdit_Pinyin, QtCore.SIGNAL(_fromUtf8("textChanged(QString)")), self.pinyin_query)
-        QtCore.QObject.connect(self.pushButton_Clear, QtCore.SIGNAL(_fromUtf8("clicked()")), self.lineEdit_Pinyin.clear)
-        QtCore.QObject.connect(self.pushButton_Clear, QtCore.SIGNAL(_fromUtf8("clicked()")), self.lineEdit_Pinyins.clear)
-        QtCore.QObject.connect(self.pushButton_Clear, QtCore.SIGNAL(_fromUtf8("clicked()")), self.plainTextEdit_Words.clear)
+        QtCore.QObject.connect(self.pushButton_Clear, QtCore.SIGNAL(_fromUtf8("clicked()")), self.clear_pinyin_all)
         QtCore.QObject.connect(self.lineEdit_Pinyins, QtCore.SIGNAL(_fromUtf8("cursorPositionChanged(int,int)")), self.pinyin_select)
+        QtCore.QObject.connect(self.listWidget_Words, QtCore.SIGNAL(_fromUtf8("itemClicked(QListWidgetItem*)")), self.words_selected)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -91,6 +110,30 @@ class Ui_MainWindow(object):
         self.groupBox_Pinyins.setTitle(_translate("MainWindow", "Pinyin(s)", None))
         self.groupBox_Words.setTitle(_translate("MainWindow", "Filtered Words", None))
     
+    def clear_pinyin_all(self):
+        self.lineEdit_Pinyin.clear()
+        self.lineEdit_Pinyins.clear()
+        self.listWidget_Words.clear()
+        self._py  = None
+        self._pys = None
+        self._words = None
+    
+    
+    def words_selected(self, item):
+        if not self._py or not self._pys:
+            return
+        self._words = self._words+item.text() if self._words else item.text()
+        self.lineEdit_Inputed.setText(self._words)
+        if len(self._words)>= len(self._pys):
+            self.listWidget_Words.clear()
+        else:
+            t1 = datetime.datetime.now()
+            pys, words = self.pyinst.query(self._py,index=len(self._words),selected=self._words)
+            t2 = datetime.datetime.now()
+            self.label_Timespent.setText("%s"%(t2-t1))
+            self.listWidget_Words.clear()
+            self.listWidget_Words.addItems(words)
+            self.groupBox_Words.setTitle("Filtered Words: %d"%len(words))
     
     def pinyin_select(self, pos1,pos2):
         #print 'pos1:%d, pos2: %d'%(pos1,pos2)
@@ -103,8 +146,8 @@ class Ui_MainWindow(object):
                     pys, words = self.pyinst.query(self._py,index=idx)
                     t2 = datetime.datetime.now()
                     self.label_Timespent.setText("%s"%(t2-t1))
-                    self.plainTextEdit_Words.setPlainText('\n'.join(words))
-                    #('\n'.join(self.pyinst.pinyin_split(py)))
+                    self.listWidget_Words.clear()
+                    self.listWidget_Words.addItems(words)
                     self.groupBox_Words.setTitle("Filtered Words: %d"%len(words))
                 pos += len(w)+1
                 idx += 1
@@ -112,6 +155,8 @@ class Ui_MainWindow(object):
     
     def pinyin_query(self, py):
         py = str(py)
+        self._words = None
+        self.lineEdit_Inputed.setText('')
         if py:
             t1 = datetime.datetime.now()
             pys, words = self.pyinst.query(py)
@@ -120,13 +165,14 @@ class Ui_MainWindow(object):
             self._pys = pys
             self.label_Timespent.setText("%s"%(t2-t1))
             self.lineEdit_Pinyins.setText(" ".join(pys))
-            self.plainTextEdit_Words.setPlainText('\n'.join(words))
-            #('\n'.join(self.pyinst.pinyin_split(py)))
+            self.listWidget_Words.clear()
+            self.listWidget_Words.addItems(words)
             self.groupBox_Words.setTitle("Filtered Words: %d"%len(words))
         else:
             self._py = None
             self._pys = None
-            self.plainTextEdit_Words.setPlainText('')
+            self.listWidget_Words.clear()
+            #self.listWidget_Words.addItems(words)
             self.lineEdit_Pinyins.setText("")
             self.groupBox_Words.setTitle("Filtered Words")
     

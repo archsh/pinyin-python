@@ -200,8 +200,8 @@ class Pinyin(object):
                 phrases = self.fetch_phrases(pys,selected=None)
             else:
                 phrases = []
-            words = self.fetch_word(pys[index])
-            return pys, phrases + words
+            words = self.fetch_word(pys[0 if index<0 else index])
+            return pys, phrases + words if len(pys)>1 else words+phrases
     
     def report(self, pys, words):
         """

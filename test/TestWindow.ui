@@ -22,6 +22,22 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string/>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLineEdit" name="lineEdit_Inputed">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
        <string/>
@@ -31,6 +47,9 @@
         <widget class="QLineEdit" name="lineEdit_Pinyin">
          <property name="text">
           <string/>
+         </property>
+         <property name="placeholderText">
+          <string>Input Pinyin</string>
          </property>
         </widget>
        </item>
@@ -57,12 +76,20 @@
         <widget class="QLabel" name="label_Timespent">
          <property name="minimumSize">
           <size>
-           <width>60</width>
+           <width>90</width>
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -76,12 +103,26 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPlainTextEdit" name="plainTextEdit_Words">
-         <property name="readOnly">
-          <bool>true</bool>
+        <widget class="QListWidget" name="listWidget_Words">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
          </property>
-         <property name="plainText">
-          <string/>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="showDropIndicator" stdset="0">
+          <bool>false</bool>
+         </property>
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <property name="gridSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
          </property>
         </widget>
        </item>
@@ -126,22 +167,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_Clear</sender>
-   <signal>clicked()</signal>
-   <receiver>plainTextEdit_Words</receiver>
-   <slot>clear()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>511</x>
-     <y>24</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>279</x>
-     <y>331</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>lineEdit_Pinyins</sender>
    <signal>cursorPositionChanged(int,int)</signal>
    <receiver>MainWindow</receiver>
@@ -154,6 +179,22 @@
     <hint type="destinationlabel">
      <x>279</x>
      <y>302</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidget_Words</sender>
+   <signal>itemClicked(QListWidgetItem*)</signal>
+   <receiver>lineEdit_Inputed</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>279</x>
+     <y>307</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>279</x>
+     <y>31</y>
     </hint>
    </hints>
   </connection>
