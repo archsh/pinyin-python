@@ -52,7 +52,7 @@ class Pinyin(object):
         """
         Initialize a Pinyin instance.
         Parameter:
-        @dictionary: a dict of dictionary format or a JSON format string.
+        @dictionary: a dict of dictionary format or a JSON format string. A default dictionary will be used if this is None.
         """
         if dictionary:
             if isinstance(dictionary,dict):
@@ -178,19 +178,41 @@ class Pinyin(object):
         return result
     
     def query(self, py,index=-1,selected=None):
+        """
+        query: get the words according to the pinyin supplied.
+        Parameters:
+        @py: the pinyin inputed.
+        @index: get the word from index, -1 means full phrase first. otherwize, return words only.
+        @selected: the selected word(s) from the begin of a phrase, this will filter the return phrases.
+        Return: A tuple with pinyin in a list and the queried phrases and words.
+        """
         if not py:
-            return []
+            return [],[]
         pys = self.pinyin_split(py)
         if len(pys)<1:
-            return []
-        elif len(pys)==1:
-            return self.fetch_word(pys[0])
+            return [],[]
+        #elif len(pys)==1:
+        #    return pys, self.fetch_word(pys[0])
         else:
-            phrases = self.fetch_phrases(pys,selected=None)
-            if index>=len(pys) or index<0:
-                index = 0
+            if index>=len(pys):
+                index = -1
+            if index < 0:
+                phrases = self.fetch_phrases(pys,selected=None)
+            else:
+                phrases = []
             words = self.fetch_word(pys[index])
-            return phrases + words
+            return pys, phrases + words
+    
+    def report(self, pys, words):
+        """
+        report: send the result(user selected words or phrases) for a pinyin, this will affect to the sort of the phrases or words.
+        Parameters:
+        @pys: the pinyin in list format returned by query.
+        @words: the words selected by user.
+        Return: None
+        """
+        pass
+    
     
     
     

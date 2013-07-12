@@ -100,7 +100,7 @@ class Ui_MainWindow(object):
             for w in self._pys:
                 if pos2>= pos and pos2<= pos+len(w):
                     t1 = datetime.datetime.now()
-                    words = self.pyinst.query(self._py,index=idx)
+                    pys, words = self.pyinst.query(self._py,index=idx)
                     t2 = datetime.datetime.now()
                     self.label_Timespent.setText("%s"%(t2-t1))
                     self.plainTextEdit_Words.setPlainText('\n'.join(words))
@@ -113,9 +113,8 @@ class Ui_MainWindow(object):
     def pinyin_query(self, py):
         py = str(py)
         if py:
-            pys   = self.pyinst.pinyin_split(py)
             t1 = datetime.datetime.now()
-            words = self.pyinst.query(py)
+            pys, words = self.pyinst.query(py)
             t2 = datetime.datetime.now()
             self._py = py
             self._pys = pys
