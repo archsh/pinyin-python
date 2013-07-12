@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-import os, datetime
+import os, datetime, re
 try:
     import simplejson as json
 except Exception:
@@ -88,6 +88,12 @@ class Pinyin(object):
         @content: a string of JSON.
         """
         self.phrases = load_json(filename=filename,content=content)
+        if self.phrases:
+            self.phrases_keys = sorted(self.phrases.keys())
+            self.phrases_keys_dict = dict([(x,tuple(x.split('-'))) for x in self.phrases_keys])
+        else:
+            self.phrases_keys = []
+            self.phrases_keys_dict = dict()
     
     def save_dictionary(self, filename):
         """
@@ -142,10 +148,10 @@ class Pinyin(object):
         assert pys
         t1 = datetime.datetime.now()
         def match_pinyin(pys,pinyinfull):
-            for p,pp in map(None,pys,pinyinfull.split('-')):
+            for p,pp in map(None,pys,pinyinfull):
                 if not p:
                     break;
-                if p in self.dictionary.keys() and p!=pp:
+                if p in self.dictionary_keys and p!=pp:
                     return False
                 if not pp or not pp.startswith(p):
                     return False
@@ -154,8 +160,16 @@ class Pinyin(object):
         result = []
         if not self.phrases:
             return []
-        for pk in sorted(filter(lambda x: x.startswith(pys[0]),self.phrases.keys())):
-            if match_pinyin(pys,pk):
+        regx = r'\-'.join([r'%s[a-z]*'%x for x in pys])+r'.*'
+        pt = re.compile(regx)
+        for pk in filter(lambda x: x.startswith(pys[0]),self.phrases_keys):
+            if pt.match(pk):
+                if not selected:
+                    result.extend(self.phrases[pk])
+                else:
+                    result.extend(map(lambda x:x[len(selected):],filter(lambda x: x.startswith(selected),self.phrases[pk])))
+            continue
+            if match_pinyin(pys,self.phrases_keys_dict[pk]):
                 #print u'Get:', ','.join(self.phrases[pk])
                 #print u'Selected:', selected
                 if not selected:
