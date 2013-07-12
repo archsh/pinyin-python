@@ -197,7 +197,7 @@ def load_txt_phrases2(filename):
     for line in filename.readlines():
         line = unicode(line.strip(),'utf8')
         if not line: continue
-        #print 'line:>',line
+        print line
         phrases,pinyins = line.split(u'\t',1)
         pinyins = pinyins.strip().replace("'",'-')
         if pinyins in datas:

@@ -141,6 +141,8 @@ class Pinyin(object):
             for p,pp in map(None,pys,pinyinfull.split('-')):
                 if not p:
                     break;
+                if p in self.dictionary.keys() and p!=pp:
+                    return False
                 if not pp or not pp.startswith(p):
                     return False
             #print 'Matched: %s <-> %s'%('-'.join(pys),pinyinfull)
