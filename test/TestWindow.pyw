@@ -6,7 +6,10 @@
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
-
+import sys,os
+sys.path.append('../pinyin')
+import datetime
+import pinyin
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -25,6 +28,7 @@ except AttributeError:
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        self.pyinst = pinyin.Pinyin()
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(559, 606)
         font = QtGui.QFont()
@@ -69,7 +73,7 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(_translate("MainWindow", "Filtered Words", None))
     
     def pinyin_query(self, pinyin):
-        self.plainTextEdit_Words.setPlainText(pinyin)
+        self.plainTextEdit_Words.setPlainText('\n'.join(self.pyinst.pinyin_split(pinyin)))
     
 
 
