@@ -28,6 +28,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         self.pyinst = pinyin.Pinyin()
+        self.pyinst.load_phrases(filename='../datas/phrase.json')
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(559, 606)
         font = QtGui.QFont()
@@ -105,7 +106,7 @@ class Ui_MainWindow(object):
         py = str(py)
         if py:
             pys   = self.pyinst.pinyin_split(py)
-            words = self.pyinst.query(py,index=len(pys)-1)
+            words = self.pyinst.query(py)
             self._py = py
             self._pys = pys
             self.lineEdit_Pinyins.setText(" ".join(pys))

@@ -137,9 +137,23 @@ class Pinyin(object):
     
     def fetch_phrases(self, pys,selected=None):
         assert pys
+        def match_pinyin(pys,pinyinfull):
+            for p,pp in map(None,pys,pinyinfull.split('-')):
+                if not p:
+                    break;
+                if not pp or not pp.startswith(p):
+                    return False
+            print 'Matched: %s <-> %s'%('-'.join(pys),pinyinfull)
+            return True
         result = []
         if not self.phrases:
             return []
+        for pk in sorted(filter(lambda x: x.startswith(pys[0]),self.phrases.keys())):
+            if match_pinyin(pys,pk):
+                if not selected:
+                    result.extend(self.phrases[pk])
+                else:
+                    result.extend(filter(lambda x: x.startswith(selected),self.phrases[pk]))
         return result
             
         

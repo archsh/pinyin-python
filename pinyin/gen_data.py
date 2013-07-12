@@ -132,7 +132,7 @@ def is_zh(c):
     else:
         return False
 
-def process_phrase(phrase):
+def process_phrase(py,word,phrase):
     assert isinstance(phrase,unicode)
     output=list()
     cur_zh=None
@@ -154,7 +154,7 @@ def process_phrase(phrase):
             #print 'Get:', cur_zh, 'Py:',cur_py
             output.append((cur_zh, cur_py if cur_py else get_pinyin(cur_zh)))
             cur_py = None
-    return '-'.join(map(lambda x:x[1],output)),''.join(map(lambda x:x[0],output))
+    return py+'-'+('-'.join(map(lambda x:x[1],output))),word+(''.join(map(lambda x:x[0],output)))
     
     
 
@@ -172,26 +172,16 @@ def load_txt_phrases(filename):
         if not line: continue
         #print 'line:>',line
         word,phrases = line.split(u' ',1)
-        phrase_dict = dict()
-        for x in filter(lambda x:x, phrases.split(',')):
-            py,words = process_phrase(x)
-            if py in phrase_dict:
-                phrase_dict[py].append(words)
-            else:
-                phrase_dict[py]=[words]
         if len(word)>1:
             py = word[1:]
         else:
             py = get_pinyin(word[0])
-        #print word[0],'(%s)'%py,':',phrases
-        if py in datas:
-            if word[0] in datas[py]:
-                datas[py][word[0]].update(phrase_dict)
+        for x in filter(lambda x:x, phrases.split(',')):
+            pys,words = process_phrase(py,word[0],x)
+            if pys in datas:
+                datas[pys].append(words)
             else:
-                datas[py][word[0]]=phrase_dict
-        else:
-            datas[py]={word[0]:phrase_dict}
-        #datas.append(((word[0],py),phrases))
+                datas[pys]=[words]
     if to_close:
         filename.close()
     return datas
@@ -221,7 +211,7 @@ def process_dictionary(txtfile,jsonfile=None,jsonindent=None): ### For Dictionar
 def process_phrases(txtfile,jsonfile=None,jsonindent=None): ### For Phrases
     assert txtfile
     t1 = datetime.datetime.now()
-    dictionary = load_txt_phrases(txtfile)
+    phrases = load_txt_phrases(txtfile)
     t2 = datetime.datetime.now()
     if jsonfile:
         #f = open(sys.argv[2],'w')
@@ -230,13 +220,15 @@ def process_phrases(txtfile,jsonfile=None,jsonindent=None): ### For Phrases
         #    f.write(line.encode('utf8'))
         #f.close()
         #write_data_python(sys.argv[2],dictionary)
-        write_json(jsonfile,dictionary,indent=jsonindent)
+        write_json(jsonfile,phrases,indent=jsonindent)
         t3 = datetime.datetime.now()
-        dictionary = load_json(filename=jsonfile)
+        phrases = load_json(filename=jsonfile)
         t4 = datetime.datetime.now()
         print 't2-t1:', t2-t1
         print 't3-t2:', t3-t2
         print 't4-t3:', t4-t3
+        for k,v in phrases.items():
+            print k,':', u','.join(v)        
     else:
         pass
         #print json.dumps(dictionary,indent=' ')
