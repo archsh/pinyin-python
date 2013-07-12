@@ -31,11 +31,18 @@ def load_txt_dictionary(filename):
     print 'Total Words1:',wnums
     if to_close:
         filename.close()
-    ret = list()
+    ret = dict()
     total_words=0
     for py in pys:
         total_words += len(datas[py])
-        ret.append((py, [(w,0) for w in datas[py]]))
+        pywords = {}
+        idx = 0
+        length = len(datas[py])
+        for w in datas[py]:
+            pywords[w]=length-idx
+            idx+=1
+        
+        ret[py]=pywords
     print 'Total Words2:',total_words
     return ret
     
@@ -82,7 +89,7 @@ PINYIN_WORDS=(\n""")
     
 
 
-def write_json(filename,datas):
+def write_json(filename,datas,indent=None):
     assert datas
     to_close = False
     if isinstance(filename,(str,unicode)):
@@ -90,7 +97,7 @@ def write_json(filename,datas):
         filename = open(filename,'w')
     if not isinstance(filename,file):
         raise Exception('Not a file handle.')
-    filename.write(json.dumps(datas))
+    filename.write(json.dumps(datas,indent=indent))
     if to_close:
         filename.close()
 
@@ -147,7 +154,7 @@ def process_phrase(phrase):
             #print 'Get:', cur_zh, 'Py:',cur_py
             output.append((cur_zh, cur_py if cur_py else get_pinyin(cur_zh)))
             cur_py = None
-    return output
+    return '-'.join(map(lambda x:x[1],output)),''.join(map(lambda x:x[0],output))
     
     
 
@@ -165,83 +172,86 @@ def load_txt_phrases(filename):
         if not line: continue
         #print 'line:>',line
         word,phrases = line.split(u' ',1)
-        phrases = [process_phrase(x) for x in filter(lambda x:x, phrases.split(','))]
+        phrase_dict = dict()
+        for x in filter(lambda x:x, phrases.split(',')):
+            py,words = process_phrase(x)
+            if py in phrase_dict:
+                phrase_dict[py].append(words)
+            else:
+                phrase_dict[py]=[words]
         if len(word)>1:
             py = word[1:]
         else:
             py = get_pinyin(word[0])
         #print word[0],'(%s)'%py,':',phrases
         if py in datas:
-            datas[py].append((word[0],phrases))
+            if word[0] in datas[py]:
+                datas[py][word[0]].update(phrase_dict)
+            else:
+                datas[py][word[0]]=phrase_dict
         else:
-            datas[py]=[(word[0],phrases)]
+            datas[py]={word[0]:phrase_dict}
         #datas.append(((word[0],py),phrases))
     if to_close:
         filename.close()
     return datas
 
 
-if __name__ == '__!!!!!main__': ### For Dictionary
-    import sys, datetime
-    if len(sys.argv)>1:
-        t1 = datetime.datetime.now()
-        dictionary = load_txt_dictionary(sys.argv[1])
-        t2 = datetime.datetime.now()
-        if len(sys.argv)>2:
-            #write_data_python(sys.argv[2],dictionary)
-            write_json(sys.argv[2],dictionary)
-            t3 = datetime.datetime.now()
-            dictionary = load_json(filename=sys.argv[2])
-            t4 = datetime.datetime.now()
-            print 't2-t1:', t2-t1
-            print 't3-t2:', t3-t2
-            print 't4-t3:', t4-t3
-            #for py,words in dictionary:
-            #    words = sorted(words,key=lambda x:x[1])
-            #    print py,':',
-            #    for w,n in words:
-            #        print w,'(%d)'%n,
-            #    print '\n'
-        else:
-            for py,words in dictionary:
-                print py, u''.join([x[0] for x in words])
-            
-            #write_json(sys.stdout,dictionary)
-        
+import sys, datetime
+
+def process_dictionary(txtfile,jsonfile=None,jsonindent=None): ### For Dictionary
+    assert txtfile
+    t1 = datetime.datetime.now()
+    dictionary = load_txt_dictionary(txtfile)
+    t2 = datetime.datetime.now()
+    if jsonfile:
+        #write_data_python(sys.argv[2],dictionary)
+        write_json(jsonfile,dictionary,indent=jsonindent)
+        t3 = datetime.datetime.now()
+        dictionary = load_json(filename=jsonfile)
+        t4 = datetime.datetime.now()
+        print 't2-t1:', t2-t1
+        print 't3-t2:', t3-t2
+        print 't4-t3:', t4-t3
     else:
-        print 'Please enter the dictionary filename.'
-        
-if __name__ == '__main__': ### For Phrases
-    import sys, datetime
-    if len(sys.argv)>1:
-        t1 = datetime.datetime.now()
-        dictionary = load_txt_phrases(sys.argv[1])
-        t2 = datetime.datetime.now()
-        if len(sys.argv)>2:
-            #f = open(sys.argv[2],'w')
-            #for py,words in dictionary:
-            #    line = u'%s %s\n'%(py, u''.join([x[0] for x in words]))
-            #    f.write(line.encode('utf8'))
-            #f.close()
-            #write_data_python(sys.argv[2],dictionary)
-            write_json(sys.argv[2],dictionary)
-            t3 = datetime.datetime.now()
-            dictionary = load_json(filename=sys.argv[2])
-            t4 = datetime.datetime.now()
-            print 't2-t1:', t2-t1
-            print 't3-t2:', t3-t2
-            print 't4-t3:', t4-t3
-            #for py,words in dictionary:
-            #    words = sorted(words,key=lambda x:x[1])
-            #    print py,':',
-            #    for w,n in words:
-            #        print w,'(%d)'%n,
-            #    print '\n'
-        else:
-            pass
-            #print json.dumps(dictionary,indent=' ')
-            
-            #write_json(sys.stdout,dictionary)
-        
+        for py,words in dictionary:
+            print py, u''.join([x[0] for x in words])
+
+
+def process_phrases(txtfile,jsonfile=None,jsonindent=None): ### For Phrases
+    assert txtfile
+    t1 = datetime.datetime.now()
+    dictionary = load_txt_phrases(txtfile)
+    t2 = datetime.datetime.now()
+    if jsonfile:
+        #f = open(sys.argv[2],'w')
+        #for py,words in dictionary:
+        #    line = u'%s %s\n'%(py, u''.join([x[0] for x in words]))
+        #    f.write(line.encode('utf8'))
+        #f.close()
+        #write_data_python(sys.argv[2],dictionary)
+        write_json(jsonfile,dictionary,indent=jsonindent)
+        t3 = datetime.datetime.now()
+        dictionary = load_json(filename=jsonfile)
+        t4 = datetime.datetime.now()
+        print 't2-t1:', t2-t1
+        print 't3-t2:', t3-t2
+        print 't4-t3:', t4-t3
     else:
-        print 'Please enter the dictionary filename.'
+        pass
+        #print json.dumps(dictionary,indent=' ')
+
+if __name__ == '__main__':
+    indent = ' '
+    if len(sys.argv)<3:
+        print 'Usage: gen_data.py dictionary|phrase txt_filename [json_output_filename]'
+        sys.exit(1)
+    if sys.argv[1]=='dictionary':
+        process_dictionary(sys.argv[2], jsonfile=None if len(sys.argv)<4 else sys.argv[3], jsonindent=indent)
+    elif sys.argv[1]=='phrase':
+        process_phrases(sys.argv[2], jsonfile=None if len(sys.argv)<4 else sys.argv[3], jsonindent=indent)
+    else:
+        print 'Usage: gen_data.py dictionary|phrase txt_filename [json_output_filename]'
+        sys.exit(1)
+        
+

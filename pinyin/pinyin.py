@@ -1,57 +1,105 @@
 # -*- coding:utf-8 -*-
 import os
+try:
+    import simplejson as json
+except Exception:
+    import json
+from dictionary import PINYIN_DICTIONARY
+
+def load_json(filename=None,content=None):
+    to_close = False
+    if filename is not None:
+        if isinstance(filename,(str,unicode)):
+            to_close = True
+            filename = open(filename,'r')
+        if not isinstance(filename,file):
+            raise Exception('Not a file handle.')
+        try:
+            datas = json.loads(filename.read())
+        except Exception,e:
+            print 'Load JSON failed:',e
+            datas = []
+        if to_close:
+            filename.close()
+    elif content is not None:
+        try:
+            datas = json.loads(content)
+        except Exception,e:
+            print 'Load JSON failed:',e
+            datas = []
+    else:
+        raise Exception('Neither filename or content is available!')
+    return datas
+
+def write_json(filename,datas):
+    assert datas
+    to_close = False
+    if isinstance(filename,(str,unicode)):
+        to_close = True
+        filename = open(filename,'w')
+    if not isinstance(filename,file):
+        raise Exception('Not a file handle.')
+    filename.write(json.dumps(datas))
+    if to_close:
+        filename.close()
 
 class Pinyin(object):
     #code
-    def __init__(self, *filename):
+    def __init__(self, dictionary=None):
         """
-        Initialize a Pinyin instance. filename for init with a user word lib filename.
-        Use a list if you need multiple filename.
+        Initialize a Pinyin instance.
+        Parameter:
+        @dictionary: a dict of dictionary format or a JSON format string.
         """
-        from data import PINYIN_WORDS
-        self._pydata=[list(row) for row in PINYIN_WORDS]
-        self._wordlib={}
-        #if not filename:
-        #    filename = [
-        #        os.path.join(os.path.dirname(os.path.abspath(__file__)),'wordlib0.txt'),
-        #        os.path.join(os.path.dirname(os.path.abspath(__file__)),'wordlib1.txt'),
-        #    ]
-        if filename is not None:
-            self.load(filename)
-    
-    def load(self, filename):
-        """
-        Load user lib data file.
-        """
-        def matching(x,y=None):
-            if not isinstance(x,dict):
-                k = x
-                x = self._wordlib
-                if k in x: x[k]+=1
-                else: x[k]=1
-            if y:
-                if y in x: x[y]+=1
-                else: x[y]=1
-            return x
-        
-        if isinstance(filename,file):
-            content = filename.read().decode('utf8').strip()
-            #print 'length:',len(content)
-            if len(content)>10:
-                self._wordlib = reduce(matching,list(content))
-            new_data = list()
-            for row in self._pydata:
-                words = row[1:]
-                words.sort(key=lambda x:self._wordlib.get(unicode(x,'utf8'),0),reverse=True)
-                row = row[:1]+words #row[1:].sort(key=lambda x:self._wordlib.get(x,0))
-                new_data.append(row)
-            self._pydata = new_data
-        elif isinstance(filename,(tuple,list)):
-            for fname in filename:
-                self.load(fname)
+        if dictionary:
+            if isinstance(dictionary,dict):
+                self.dictionary = dictionary
+            else:
+                try:
+                    self.dictionary = json.loads(dictionary)
+                except Exception,e:
+                    print 'Warning: Invalid JSON format!',e
+                    self.dictionary = None
         else:
-            f = open(filename)
-            self.load(f)
+            self.dictionary = None
+        self.phrases = None
+    
+    def load_dictionary(self, filename=None, content=None):
+        """
+        Load dictionary from a JSON formated file(filename) or string(content).
+        Parameters:
+        @filename: a string of filename and path or a file object.
+        @content: a string of JSON.
+        """
+        self.dictionary = load_json(filename=filename,content=content)
+    
+    
+    def load_phrases(self, filename=None,content=None):
+        """
+        Load phrases from a JSON formated file(filename) or string(content).
+        Parameters:
+        @filename: a string of filename and path or a file object.
+        @content: a string of JSON.
+        """
+        self.phrases = load_json(filename=filename,content=content)
+    
+    def save_dictionary(self, filename):
+        """
+        Save current disctionary to a file with JSON format.
+        Parameters:
+        @filename: a string of filename and path or a file object.
+        """
+        write_json(filename,self.dictionary)
+    
+    def save_phrases(self, filename):
+        """
+        Save current phrases to a file with JSON format.
+        Parameters:
+        @filename: a string of filename and path or a file object.
+        """
+        write_json(filename,self.phrases)
+    
+    
 
     
     def query(self, py,cross_sort=False,remove_dup=False):
