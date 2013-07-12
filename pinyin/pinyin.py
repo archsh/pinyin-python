@@ -135,21 +135,51 @@ class Pinyin(object):
                 result.append(last_ch)
         return result
     
-    def fetch_phrases(self, py):
-        assert py
+    def fetch_phrases(self, pys,selected=None):
+        assert pys
+        result = []
         if not self.phrases:
-            return None
+            return []
+        return result
+            
         
     def fetch_word(self, py):
         assert py
-        if py in self.dictionary.keys():
-            return map(lambda k: k[0], sorted(self.dictionary[py].items(),key=lambda x:x[1], reverse=True))
-        else:
+        def remove_dup(x,y):
+            if not isinstance(x,list):
+                x=[x]
+            if y not in x:
+                x.append(y)
+            return x
+        def _do_fetch(piny):
+            if piny in self.dictionary.keys():
+                return map(lambda k: k[0], sorted(self.dictionary[piny].items(),key=lambda x:x[1], reverse=True))
+            else:
+                result = list()
+                for k in filter(lambda x: x.startswith(piny),sorted(self.dictionary.keys())):
+                    result.extend(_do_fetch(k))
+                return result
+        result = _do_fetch(py)
+        result = reduce(remove_dup,result) if len(result)> 1 else result
+        return result
+    
+    def query(self, py,index=-1,selected=None):
+        if not py:
             return []
+        pys = self.pinyin_split(py)
+        if len(pys)<1:
+            return []
+        elif len(pys)==1:
+            return self.fetch_word(pys[0])
+        else:
+            phrases = self.fetch_phrases(pys,selected=None)
+            if index>=len(pys) or index<0:
+                index = 0
+            words = self.fetch_word(pys[index])
+            return phrases + words
     
     
-    
-    def query(self, py,cross_sort=False,remove_dup=False):
+    def queryXXX(self, py,cross_sort=False,remove_dup=False):
         import datetime
         py = py.upper()
         def match_pinyin(x):
