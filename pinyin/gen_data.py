@@ -1,8 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
 import simplejson as json
-from data import PINYIN_WORDS
-NEW_PINYIN_WORDS = dict([(x[0].lower(),x[1:]) for x in PINYIN_WORDS])
 def load_txt_dictionary(filename):
     to_close = False
     if isinstance(filename,(str,unicode)):
@@ -31,14 +29,6 @@ def load_txt_dictionary(filename):
         #datas.append((py,words))
     print 'PY Length:', len(datas.keys())
     print 'Total Words1:',wnums
-    for k,v in NEW_PINYIN_WORDS.items():
-        if k not in datas:
-            datas[k]=v
-        else:
-            for w in v:
-                w = unicode(w,'utf8')
-                if w not in datas[k]:
-                    datas[k].append(w)
     if to_close:
         filename.close()
     ret = list()
@@ -74,6 +64,24 @@ def load_json(filename=None,content=None):
         raise Exception('Neither filename or content is available!')
     return datas
 
+def write_data_python(filename,datas):
+    assert datas
+    to_close = False
+    if isinstance(filename,(str,unicode)):
+        to_close = True
+        filename = open(filename,'w')
+    if not isinstance(filename,file):
+        raise Exception('Not a file handle.')
+    filename.write("""# -*- coding:utf-8 -*-
+PINYIN_WORDS=(\n""")
+    for py,words in datas:
+        line = u'("%s", %s),\n'%(py.upper(), u','.join([u'"%s"'%x[0] for x in words]))
+        filename.write(line.encode('utf8'))
+    filename.write(")\n")
+    filename.close()
+    
+
+
 def write_json(filename,datas):
     assert datas
     to_close = False
@@ -96,12 +104,12 @@ if __name__ == '__main__':
     if len(sys.argv)>1:
         dictionary = load_txt_dictionary(sys.argv[1])
         if len(sys.argv)>2:
-            f = open(sys.argv[2],'w')
-            for py,words in dictionary:
-                line = u'%s %s\n'%(py, u''.join([x[0] for x in words]))
-                f.write(line.encode('utf8'))
-            f.close()
-            #write_json(sys.argv[2],dictionary)
+            #f = open(sys.argv[2],'w')
+            #for py,words in dictionary:
+            #    line = u'%s %s\n'%(py, u''.join([x[0] for x in words]))
+            #    f.write(line.encode('utf8'))
+            #f.close()
+            write_data_python(sys.argv[2],dictionary)
             #dictionary = load_json(filename=sys.argv[2])
             #for py,words in dictionary:
             #    words = sorted(words,key=lambda x:x[1])
