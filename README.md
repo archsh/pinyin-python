@@ -28,3 +28,20 @@ Usage:
     > 译
     > 移
     > 异
+    >>> pys,words = py.query('yipinby',index=1,selected=u'一')
+    >>> for w in words: print '>',w
+    ...
+    > 品鲍鱼
+    > 品
+    > 贫
+    > 拼
+    > 频
+    > 聘
+    > 苹
+    > 拚
+    > 姘
+    > 嫔
+    > 榀
+    > 颦
+    > 牝
+    > 涄
