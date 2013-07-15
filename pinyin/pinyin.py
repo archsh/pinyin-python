@@ -146,7 +146,7 @@ class Pinyin(object):
     
     def fetch_phrases(self, pys,selected=None):
         assert pys
-        t1 = datetime.datetime.now()
+        #t1 = datetime.datetime.now()
         def match_pinyin(pys,pinyinfull):
             for p,pp in map(None,pys,pinyinfull):
                 if not p:
@@ -176,14 +176,14 @@ class Pinyin(object):
                     result.extend(self.phrases[pk])
                 else:
                     result.extend(map(lambda x:x[len(selected):],filter(lambda x: x.startswith(selected),self.phrases[pk])))
-        t2 = datetime.datetime.now()
-        print 'fetch_phrases:',t2-t1
+        #t2 = datetime.datetime.now()
+        #print 'fetch_phrases:',t2-t1
         return result
             
         
     def fetch_word(self, py):
         assert py
-        t1 = datetime.datetime.now()
+        #t1 = datetime.datetime.now()
         def remove_dup(x,y):
             if not isinstance(x,list):
                 x=[x]
@@ -201,8 +201,8 @@ class Pinyin(object):
                 return result
         result = _do_fetch(py)
         result = reduce(remove_dup,result) if len(result)> 1 else result
-        t2 = datetime.datetime.now()
-        print 'fetch_word:',t2-t1
+        #t2 = datetime.datetime.now()
+        #print 'fetch_word:',t2-t1
         return result
     
     def query(self, py,index=-1,selected=None):
@@ -237,7 +237,3 @@ class Pinyin(object):
         Return: None
         """
         pass
-    
-    
-    
-    
