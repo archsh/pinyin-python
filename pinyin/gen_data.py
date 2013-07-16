@@ -41,20 +41,7 @@ def load_txt_dictionary(filename):
     print 'Total Words1:',wnums, 'Failures:',failes
     if to_close:
         filename.close()
-    ret = dict()
-    total_words=0
-    for py in pys:
-        total_words += len(datas[py]['words'])
-        pywords = {}
-        idx = 0
-        length = len(datas[py]['words'])
-        for w in datas[py]['words']:
-            pywords[w]=length-idx
-            idx+=1
-        
-        ret[py]={'words':pywords,'sort':datas[py]['sort']}
-    print 'Total Words2:',total_words
-    return ret
+    return datas
     
 def load_json(filename=None,content=None):
     to_close = False

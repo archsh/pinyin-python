@@ -71,13 +71,16 @@ class Pinyin(object):
         
     def resort_dictionary(self, dictionary):
         assert isinstance(dictionary,dict)
-        self.dictionary_words = dict()
-        for k,v in dictionary.items():
-            #print k
-            #,v['words']
-            self.dictionary_words[k]=map(lambda x:x[0],sorted([(p,w) for p,w in v['words'].items()],key=lambda x:x[1],reverse=True))
-            #print k, len(self.dictionary_words[k])
         self.dictionary_keys  = map(lambda x: x[0], sorted([(k,v) for k,v in dictionary.items()],key=lambda x:x[1]['sort']))
+        self.dictionary_words = list()
+        wc = 0
+        for k,v in self.dictionary.items():
+            for w in v['words']:
+                self.dictionary_words.append((w,k))
+                wc += 1
+        print 'WC:',wc
+            
+        
     
     def resort_phrases(self, phrases):
         if phrases:
@@ -206,13 +209,16 @@ class Pinyin(object):
                 x.append(y)
             return x
         def _do_fetch(piny):
-            if piny in self.dictionary_keys:
-                return self.dictionary_words[piny]
+            if False:#piny in self.dictionary_keys:
+                return self.dictionary[piny]['words']
             else:
                 result = list()
+                i=0
                 for k in filter(lambda x: x.startswith(piny),self.dictionary_keys):
-                    result.extend(_do_fetch(k))
-                    break;
+                    result.extend(self.dictionary[k]['words'])
+                    i+=1
+                    if i>3:break
+                    #break;
                 return result
         result = _do_fetch(py)
         result = reduce(remove_dup,result) if len(result)> 1 else result
@@ -251,4 +257,14 @@ class Pinyin(object):
         @words: the words selected by user.
         Return: None
         """
-        pass
+        if len(pys)<1 or len(words)<1:
+            return
+        #print 'Reported:','-'.join(pys),words
+        for w in words:
+            for c,p in filter(lambda x: x[0]==w,self.dictionary_words):
+                #print '>>>',w,'>>>',','.join(self.dictionary[p]['words'])
+                self.dictionary[p]['words'].remove(w)
+                self.dictionary[p]['words'] = [w]+self.dictionary[p]['words']
+                self.dictionary_keys.remove(p)
+                self.dictionary_keys = [p]+self.dictionary_keys
+

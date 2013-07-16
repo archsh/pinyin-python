@@ -93,7 +93,7 @@ class Ui_MainWindow(object):
         self.listWidget_Words.setLayoutMode(QtGui.QListView.Batched)
         self.listWidget_Words.setSpacing(3)
         self.listWidget_Words.setGridSize(QtCore.QSize(20, 20))
-        self.listWidget_Words.setViewMode(QtGui.QListView.IconMode)
+        #self.listWidget_Words.setViewMode(QtGui.QListView.IconMode)
         self.listWidget_Words.setUniformItemSizes(True)
         self.listWidget_Words.setWordWrap(True)
         self.listWidget_Words.setObjectName(_fromUtf8("listWidget_Words"))
@@ -132,6 +132,8 @@ class Ui_MainWindow(object):
         self.lineEdit_Inputed.setText(self._words)
         if len(self._words)>= len(self._pys):
             self.listWidget_Words.clear()
+            print 'Pys:','-'.join(self._pys),self._words
+            self.pyinst.report(self._pys,self._words)
         else:
             t1 = datetime.datetime.now()
             pys, words = self.pyinst.query(self._py,index=len(self._words),selected=self._words)
