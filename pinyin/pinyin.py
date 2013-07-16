@@ -60,14 +60,33 @@ class Pinyin(object):
             else:
                 try:
                     self.dictionary = json.loads(dictionary)
-                    self.dictionary_keys = sorted(self.dictionary.keys())
+                    self.resort_dictionary(self.dictionary)
                 except Exception,e:
                     print 'Warning: Invalid JSON format!',e
                     self.dictionary = None
         else:
             self.dictionary = PINYIN_DICTIONARY
-            self.dictionary_keys = sorted(self.dictionary.keys())
+            self.resort_dictionary(self.dictionary)
         self.phrases = None
+        
+    def resort_dictionary(self, dictionary):
+        assert isinstance(dictionary,dict)
+        self.dictionary_words = dict()
+        for k,v in dictionary.items():
+            #print k
+            #,v['words']
+            self.dictionary_words[k]=map(lambda x:x[0],sorted([(p,w) for p,w in v['words'].items()],key=lambda x:x[1],reverse=True))
+            print k, len(self.dictionary_words[k])
+        self.dictionary_keys  = map(lambda x: x[0], sorted([(k,v) for k,v in dictionary.items()],key=lambda x:x[1]['sort']))
+    
+    def resort_phrases(self, phrases):
+        if phrases:
+            self.phrases_keys = sorted(phrases.keys())
+            self.phrases_keys_dict = dict([(x,tuple(x.split('-'))) for x in self.phrases_keys])
+        else:
+            self.phrases_keys = []
+            self.phrases_keys_dict = dict()
+    
     
     def load_dictionary(self, filename=None, content=None):
         """
@@ -77,7 +96,7 @@ class Pinyin(object):
         @content: a string of JSON.
         """
         self.dictionary = load_json(filename=filename,content=content)
-        self.dictionary_keys = sorted(self.dictionary.keys())
+        self.resort_dictionary(self.dictionary)
     
     
     def load_phrases(self, filename=None,content=None):
@@ -88,12 +107,8 @@ class Pinyin(object):
         @content: a string of JSON.
         """
         self.phrases = load_json(filename=filename,content=content)
-        if self.phrases:
-            self.phrases_keys = sorted(self.phrases.keys())
-            self.phrases_keys_dict = dict([(x,tuple(x.split('-'))) for x in self.phrases_keys])
-        else:
-            self.phrases_keys = []
-            self.phrases_keys_dict = dict()
+        self.resort_phrases(self.phrases)
+        
     
     def save_dictionary(self, filename):
         """
@@ -121,7 +136,7 @@ class Pinyin(object):
         pinyin_split: split a given pinyin string to a list of seperated pinyin.
         '''
         def match_pinyin(s):
-            if filter(lambda x: x.startswith(s),self.dictionary.keys()):
+            if filter(lambda x: x.startswith(s),self.dictionary_keys):
                 return True
             return False
         assert pystr
@@ -191,8 +206,8 @@ class Pinyin(object):
                 x.append(y)
             return x
         def _do_fetch(piny):
-            if piny in self.dictionary.keys():
-                return map(lambda k: k[0], self.dictionary[piny])
+            if piny in self.dictionary_keys:
+                return self.dictionary_words[piny]
             else:
                 result = list()
                 for k in filter(lambda x: x.startswith(piny),self.dictionary_keys):

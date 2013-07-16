@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 import simplejson as json
+
 def load_txt_dictionary(filename):
     to_close = False
     if isinstance(filename,(str,unicode)):
@@ -20,9 +21,9 @@ def load_txt_dictionary(filename):
         py = xx[0]
         words = [x for x in xx[1]]
         if py in datas:
-            datas[py].extend(words)
+            datas[py]['words'].extend(words)
         else:
-            datas[py]=words
+            datas[py]={'words':words,'sort':len(pys)}
             pys.append(py)
         #print py,':',len(words)
         wnums += len(words)
@@ -34,15 +35,15 @@ def load_txt_dictionary(filename):
     ret = dict()
     total_words=0
     for py in pys:
-        total_words += len(datas[py])
+        total_words += len(datas[py]['words'])
         pywords = {}
         idx = 0
-        length = len(datas[py])
-        for w in datas[py]:
+        length = len(datas[py]['words'])
+        for w in datas[py]['words']:
             pywords[w]=length-idx
             idx+=1
         
-        ret[py]=pywords
+        ret[py]={'words':pywords,'sort':datas[py]['sort']}
     print 'Total Words2:',total_words
     return ret
     
@@ -186,21 +187,27 @@ def load_txt_phrases(filename):
         filename.close()
     return datas
 
-def load_txt_phrases2(filename):
+def load_txt_phrases2(filename,datas=None):
     to_close = False
     if isinstance(filename,(str,unicode)):
         to_close = True
         filename = open(filename,'rU')
     if not isinstance(filename,file):
         raise Exception('Not a file handle.')
-    datas = dict()
+    datas = dict() if datas is None else datas
     for line in filename.readlines():
         line = unicode(line.strip(),'utf8')
         if not line: continue
         print line
-        phrases,pinyins = line.split(u'\t',1)
+        ls = line.split(u'\t')
+        if len(ls)<2:
+            continue
+        phrases,pinyins = ls[0],ls[1]
         pinyins = pinyins.strip().replace("'",'-')
+        phrases = phrases.strip()
         if pinyins in datas:
+            if phrases in datas[pinyins]:
+                continue
             datas[pinyins].append(phrases)
         else:
             datas[pinyins]=[phrases]
@@ -257,8 +264,16 @@ def process_phrases(txtfile,jsonfile=None,jsonindent=None): ### For Phrases
 
 def process_phrases2(txtfile,jsonfile=None,jsonindent=None): ### For Phrases
     assert txtfile
+    if jsonfile:
+        try:
+            phrases = load_json(filename=jsonfile)
+        except Exception:
+            phrases = None
+    else:
+        phrases = None
     t1 = datetime.datetime.now()
-    phrases = load_txt_phrases2(txtfile)
+    for fname in txtfile.split(','):
+        phrases = load_txt_phrases2(fname,phrases)
     t2 = datetime.datetime.now()
     if jsonfile:
         #f = open(sys.argv[2],'w')
