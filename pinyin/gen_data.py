@@ -12,6 +12,7 @@ def load_txt_dictionary(filename):
     datas = dict()
     pys   = list()
     wnums = 0
+    failes = 0
     for line in filename.readlines():
         line = unicode(line.strip(),'utf8')
         #print 'line:>',line
@@ -19,7 +20,15 @@ def load_txt_dictionary(filename):
         if len(xx)!=2:
             continue
         py = xx[0]
-        words = [x for x in xx[1]]
+        words = list()
+        for x in xx[1]:
+            try:
+                x.encode('gbk')
+            except Exception:
+                print 'Failure'
+                failes+=1
+            else:
+                words.append(x)
         if py in datas:
             datas[py]['words'].extend(words)
         else:
@@ -29,7 +38,7 @@ def load_txt_dictionary(filename):
         wnums += len(words)
         #datas.append((py,words))
     print 'PY Length:', len(datas.keys())
-    print 'Total Words1:',wnums
+    print 'Total Words1:',wnums, 'Failures:',failes
     if to_close:
         filename.close()
     ret = dict()

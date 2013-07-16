@@ -76,7 +76,7 @@ class Pinyin(object):
             #print k
             #,v['words']
             self.dictionary_words[k]=map(lambda x:x[0],sorted([(p,w) for p,w in v['words'].items()],key=lambda x:x[1],reverse=True))
-            print k, len(self.dictionary_words[k])
+            #print k, len(self.dictionary_words[k])
         self.dictionary_keys  = map(lambda x: x[0], sorted([(k,v) for k,v in dictionary.items()],key=lambda x:x[1]['sort']))
     
     def resort_phrases(self, phrases):

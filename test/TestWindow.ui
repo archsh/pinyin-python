@@ -115,6 +115,12 @@
          <property name="showDropIndicator" stdset="0">
           <bool>false</bool>
          </property>
+         <property name="resizeMode">
+          <enum>QListView::Adjust</enum>
+         </property>
+         <property name="layoutMode">
+          <enum>QListView::Batched</enum>
+         </property>
          <property name="spacing">
           <number>3</number>
          </property>
@@ -123,6 +129,15 @@
            <width>20</width>
            <height>20</height>
           </size>
+         </property>
+         <property name="viewMode">
+          <enum>QListView::IconMode</enum>
+         </property>
+         <property name="uniformItemSizes">
+          <bool>true</bool>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
