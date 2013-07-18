@@ -98,7 +98,7 @@ class Pinyin(object):
     def resort_phrases(self, phrases):
         if phrases:
             self.phrases_keys = sorted(phrases.keys())
-            self.phrases_keys_dict = dict([(x,tuple(x.split('-'))) for x in self.phrases_keys])
+            #self.phrases_keys_dict = dict([(x,tuple(x.split('-'))) for x in self.phrases_keys])
             if False:
                 opt_dictionary = dict()
                 pys_dictionary = dict()
@@ -118,7 +118,7 @@ class Pinyin(object):
             
         else:
             self.phrases_keys = []
-            self.phrases_keys_dict = dict()
+            #self.phrases_keys_dict = dict()
     
     
     def load_dictionary(self, filename=None, content=None):
@@ -216,14 +216,6 @@ class Pinyin(object):
                     result.extend(self.phrases[pk])
                 else:
                     result.extend(map(lambda x:x[len(selected):],filter(lambda x: x.startswith(selected),self.phrases[pk])))
-            continue
-            if match_pinyin(pys,self.phrases_keys_dict[pk]):
-                #print u'Get:', ','.join(self.phrases[pk])
-                #print u'Selected:', selected
-                if not selected:
-                    result.extend(self.phrases[pk])
-                else:
-                    result.extend(map(lambda x:x[len(selected):],filter(lambda x: x.startswith(selected),self.phrases[pk])))
         #t2 = datetime.datetime.now()
         #print 'fetch_phrases:',t2-t1
         return result
@@ -290,11 +282,26 @@ class Pinyin(object):
         if len(pys)<1 or len(words)<1:
             return
         #print 'Reported:','-'.join(pys),words
+        fullpys = list()
+        idx=0
         for w in words:
             for c,p in filter(lambda x: x[0]==w,self.dictionary_words):
                 #print '>>>',w,'>>>',','.join(self.dictionary[p]['words'])
+                if not p.startswith(pys[idx]):
+                    continue
                 self.dictionary[p]['words'].remove(w)
                 self.dictionary[p]['words'] = [w]+self.dictionary[p]['words']
                 self.dictionary_keys.remove(p)
                 self.dictionary_keys = [p]+self.dictionary_keys
+                fullpys.append(p)
+            idx+=1
+        if len(fullpys)>1:
+            fullpys = '-'.join(fullpys)
+            if fullpys in self.phrases:
+                self.phrases[fullpys].insert(0,words)
+                self.phrases_keys.remove(fullpys)
+            else:
+                self.phrases[fullpys]=[words]
+            self.phrases_keys.insert(0,fullpys)
+            
 
