@@ -27,8 +27,16 @@ except AttributeError:
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        t1 = datetime.datetime.now()
         self.pyinst = pinyin.Pinyin()
+        t2 = datetime.datetime.now()
         self.pyinst.load_phrases(filename='../datas/phrase.json')
+        t3 = datetime.datetime.now()
+        print 't2-t1:',t2-t1
+        print 't3-t2:',t3-t2
+        self._py=None
+        self._pys=None
+        self._words=None
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(559, 606)
         font = QtGui.QFont()

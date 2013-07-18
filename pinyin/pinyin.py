@@ -69,23 +69,53 @@ class Pinyin(object):
             self.resort_dictionary(self.dictionary)
         self.phrases = None
         
-    def resort_dictionary(self, dictionary):
+    def resort_dictionary(self, dictionary, py_optimized=None, wd_optimized=None):
         assert isinstance(dictionary,dict)
+        
+        
+        if False:#isinstance(py_optimized,dict):
+            for k in dictionary.keys():
+                if k in py_optimized:
+                    dictionary[k]['sort']+=py_optimized[k]
         self.dictionary_keys  = map(lambda x: x[0], sorted([(k,v) for k,v in dictionary.items()],key=lambda x:x[1]['sort']))
         self.dictionary_words = list()
+        if False:#isinstance(wd_optimized,dict):
+            def resort_words_cmp(w):
+                if w in wd_optimized:
+                    return wd_optimized
+                else:
+                    return 0
+            for k,v in dictionary.items():
+                dictionary[k]['words']=sorted(v['words'],key=resort_words_cmp,reverse=True)
         wc = 0
         for k,v in self.dictionary.items():
             for w in v['words']:
                 self.dictionary_words.append((w,k))
                 wc += 1
-        print 'WC:',wc
+        #print 'WC:',wc
             
-        
-    
+
     def resort_phrases(self, phrases):
         if phrases:
             self.phrases_keys = sorted(phrases.keys())
             self.phrases_keys_dict = dict([(x,tuple(x.split('-'))) for x in self.phrases_keys])
+            if False:
+                opt_dictionary = dict()
+                pys_dictionary = dict()
+                for k,v in phrases.items():
+                    for py in k.split('-'):
+                        if py in pys_dictionary:
+                            pys_dictionary[py]+=1
+                        else:
+                            pys_dictionary[py]=1
+                    for p in v:
+                        for w in p:
+                            if w in opt_dictionary:
+                                opt_dictionary[w]+=1
+                            else:
+                                opt_dictionary[w]=1000
+                #self.resort_dictionary(self.dictionary,pys_dictionary,opt_dictionary)
+            
         else:
             self.phrases_keys = []
             self.phrases_keys_dict = dict()
@@ -178,7 +208,7 @@ class Pinyin(object):
         result = []
         if not self.phrases:
             return []
-        regx = r'\-'.join([r'%s[a-z]*'%x for x in pys])+r'.*'
+        regx = r'\-'.join([r'%s[a-z]*'%x for x in pys])+r'$'#+r'.*'
         pt = re.compile(regx)
         for pk in filter(lambda x: x.startswith(pys[0]),self.phrases_keys):
             if pt.match(pk):
