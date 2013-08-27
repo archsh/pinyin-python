@@ -80,9 +80,26 @@ class Pinyin(object):
         self.dictionary_keys = set(map(lambda x:x[0], reduce(_m,self.dictionary.values())))
 
     def resort_phrases(self, phrases):
+        words = {}
         if phrases:
             self.phrases_keys = sorted(phrases.keys())
             #self.phrases_keys_dict = dict([(x,tuple(x.split('-'))) for x in self.phrases_keys])
+            for k,p in phrases.items():
+                pys = k.split('-')
+                for ws in p:
+                    for py,w in map(None,pys,ws):
+                        if w in words:
+                            words[w]['sort']+=1
+                        else:
+                            words[w]={'py':py,'sort':1}
+            words = sorted(map(lambda x: (x[0],x[1]['py'],x[1]['sort']),words.items()),key=lambda x:x[2],reverse=False)
+            for w,p,s in words:
+                if p[0] not in self.dictionary:
+                    continue
+                l = [p,w]
+                if l in self.dictionary[p[0]]:
+                    self.dictionary[p[0]].remove(l)
+                    self.dictionary[p[0]].insert(0,l)
             if False:
                 opt_dictionary = dict()
                 pys_dictionary = dict()

@@ -115,8 +115,16 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.pushButton_Clear, QtCore.SIGNAL(_fromUtf8("clicked()")), self.clear_pinyin_all)
         QtCore.QObject.connect(self.lineEdit_Pinyins, QtCore.SIGNAL(_fromUtf8("cursorPositionChanged(int,int)")), self.pinyin_select)
         QtCore.QObject.connect(self.listWidget_Words, QtCore.SIGNAL(_fromUtf8("itemClicked(QListWidgetItem*)")), self.words_selected)
+        #QtCore.QObject.connect(MainWindow, QtCore.SIGNAL(_fromUtf8("close()")), self.close)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        #MainWindow.close = self.close
 
+    def update_json(self):
+        print 'Closing ...'
+        self.pyinst.save_dictionary('my_dictionary.json')
+        self.pyinst.save_phrases('my_phrases.json')
+        return True
+    
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.pushButton_Clear.setText(_translate("MainWindow", "Clear", None))
@@ -130,6 +138,7 @@ class Ui_MainWindow(object):
         self._py  = None
         self._pys = None
         self._words = None
+        self.update_json()
     
     
     def words_selected(self, item):
