@@ -71,29 +71,13 @@ class Pinyin(object):
         
     def resort_dictionary(self, dictionary, py_optimized=None, wd_optimized=None):
         assert isinstance(dictionary,dict)
-        
-        
-        if False:#isinstance(py_optimized,dict):
-            for k in dictionary.keys():
-                if k in py_optimized:
-                    dictionary[k]['sort']+=py_optimized[k]
-        self.dictionary_keys  = map(lambda x: x[0], sorted([(k,v) for k,v in dictionary.items()],key=lambda x:x[1]['sort']))
-        self.dictionary_words = list()
-        if False:#isinstance(wd_optimized,dict):
-            def resort_words_cmp(w):
-                if w in wd_optimized:
-                    return wd_optimized
-                else:
-                    return 0
-            for k,v in dictionary.items():
-                dictionary[k]['words']=sorted(v['words'],key=resort_words_cmp,reverse=True)
-        wc = 0
-        for k,v in self.dictionary.items():
-            for w in v['words']:
-                self.dictionary_words.append((w,k))
-                wc += 1
-        #print 'WC:',wc
-            
+        def _m(x,y):
+            if not isinstance(x,list):
+                x=list()
+            if isinstance(y,list):
+                x.extend(y)
+            return x
+        self.dictionary_keys = set(map(lambda x:x[0], reduce(_m,self.dictionary.values())))
 
     def resort_phrases(self, phrases):
         if phrases:
@@ -194,7 +178,7 @@ class Pinyin(object):
     
     def fetch_phrases(self, pys,selected=None):
         assert pys
-        #t1 = datetime.datetime.now()
+        t1 = datetime.datetime.now()
         def match_pinyin(pys,pinyinfull):
             for p,pp in map(None,pys,pinyinfull):
                 if not p:
@@ -216,36 +200,30 @@ class Pinyin(object):
                     result.extend(self.phrases[pk])
                 else:
                     result.extend(map(lambda x:x[len(selected):],filter(lambda x: x.startswith(selected),self.phrases[pk])))
-        #t2 = datetime.datetime.now()
-        #print 'fetch_phrases:',t2-t1
+        t2 = datetime.datetime.now()
+        print 'fetch_phrases:',t2-t1
         return result
             
         
     def fetch_word(self, py):
         assert py
-        #t1 = datetime.datetime.now()
+        t1 = datetime.datetime.now()
         def remove_dup(x,y):
             if not isinstance(x,list):
                 x=[x]
             if y not in x:
                 x.append(y)
             return x
+
         def _do_fetch(piny):
-            if False:#piny in self.dictionary_keys:
-                return self.dictionary[piny]['words']
-            else:
-                result = list()
-                i=0
-                for k in filter(lambda x: x.startswith(piny),self.dictionary_keys):
-                    result.extend(self.dictionary[k]['words'])
-                    i+=1
-                    if i>3:break
-                    #break;
-                return result
+            if piny[0] in self.dictionary:
+                for x in map(lambda x:x[1], filter(lambda x:x[0].startswith(piny),self.dictionary[piny[0]])):
+                    yield x
+    
         result = _do_fetch(py)
-        result = reduce(remove_dup,result) if len(result)> 1 else result
-        #t2 = datetime.datetime.now()
-        #print 'fetch_word:',t2-t1
+        result = reduce(remove_dup,result,[]) # if len(result)> 1 else result
+        t2 = datetime.datetime.now()
+        print 'fetch_word:',t2-t1
         return result
     
     def query(self, py,index=-1,selected=None):
@@ -281,24 +259,28 @@ class Pinyin(object):
         """
         if len(pys)<1 or len(words)<1:
             return
-        #print 'Reported:','-'.join(pys),words
+        print 'Reported:','-'.join(pys),words
         fullpys = list()
         idx=0
-        for w in words:
-            for c,p in filter(lambda x: x[0]==w,self.dictionary_words):
-                #print '>>>',w,'>>>',','.join(self.dictionary[p]['words'])
-                if not p.startswith(pys[idx]):
-                    continue
-                self.dictionary[p]['words'].remove(w)
-                self.dictionary[p]['words'] = [w]+self.dictionary[p]['words']
-                self.dictionary_keys.remove(p)
-                self.dictionary_keys = [p]+self.dictionary_keys
-                fullpys.append(p)
-            idx+=1
+        for p,w in map(None,pys,words):
+            if p[0] not in self.dictionary:
+                return
+            l = filter(lambda x:x[0].startswith(p) and x[1]==w, self.dictionary[p[0]])
+            if not l:
+                return
+            l = min(l,key=lambda x:x[0])
+            fullpys.append(l[0])
+            self.dictionary[p[0]].remove(l)
+            self.dictionary[p[0]].insert(0,l)
+            
         if len(fullpys)>1:
             fullpys = '-'.join(fullpys)
             if fullpys in self.phrases:
-                self.phrases[fullpys].insert(0,words)
+                if words in self.phrases[fullpys]:
+                    self.phrases[fullpys].remove(words)
+                    self.phrases[fullpys].insert(0,words)
+                else:
+                    self.phrases[fullpys].insert(0,words)
                 self.phrases_keys.remove(fullpys)
             else:
                 self.phrases[fullpys]=[words]
